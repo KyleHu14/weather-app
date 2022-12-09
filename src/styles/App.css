@@ -1,0 +1,15 @@
+body{
+    margin: 0;
+    background-color: black;
+}
+
+.location-btn{
+    margin-top: 30px;
+    display:flex;
+    justify-content: center;
+}
+
+.display-location{
+    color: white;
+    text-align: center;
+}
