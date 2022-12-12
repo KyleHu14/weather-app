@@ -3,8 +3,6 @@ import "./styles/App.css";
 
 function App() {
 	// [USE STATES]
-	// User's coordinates
-	const [displayLocationText, setLocationText] = useState("");
 	// Current Weather Information
 	// Location of weather being displayed
 	const [currWeatherInfo, setWeatherInfo] = useState({
@@ -25,20 +23,18 @@ function App() {
 		const success = (pos) => {
 			const lat = pos.coords.latitude;
 			const long = pos.coords.longitude;
-
-			setLocationText(`Your location : (${lat}, ${long})`);
 			getForecast(lat, long);
 		};
 
 		const error = () => {
-			setLocationText("Unable to retrieve your location");
+			console.log("Unable to retrieve your location");
 		};
 
 		// If the user does not allow geolocation
 		if (!navigator.geolocation) {
-			setLocationText("Geolocation is unsupported by your browser");
+			console.log("Geolocation is unsupported by your browser");
 		} else {
-			setLocationText("Finding your location..");
+			console.log("Finding your location..");
 			navigator.geolocation.getCurrentPosition(success, error);
 		}
 	};
@@ -62,8 +58,11 @@ function App() {
 		if (response.ok) {
 			const data = await response.json();
 			const currDay = data.days[0];
+
+			let addr = await getAddr(lat, long);
+
 			setWeatherInfo({
-				location: "Hsinchu, Taiwan",
+				location: addr,
 				temp: currDay.temp,
 				desc: currDay.conditions,
 				high: currDay.tempmax,
@@ -72,17 +71,31 @@ function App() {
 				humidity: currDay.humidity,
 				windspeed: currDay.windspeed,
 			});
-			console.log(data);
 		} else {
 			console.log("ERROR!");
 		}
+	};
+
+	const getAddr = async (lat, long) => {
+		const API_KEY = "AeJ03vjX2DuUgrZyE22K6m7IdeCaoxXF";
+		const resp = await fetch(
+			`https://api.tomtom.com/search/2/reverseGeocode/${lat},${long}.json?key=${API_KEY}&language=en-US`
+		);
+		const data = await resp.json();
+
+		let city = String(data.addresses[0].address.municipality);
+		let country = String(data.addresses[0].address.country);
+
+		return `${city}, ${country}`;
 	};
 
 	if (currWeatherInfo.location !== "") {
 		return (
 			<div className="app">
 				<div className="today-weather">
-					<div className="location-name">Hsinchu, Taiwan</div>
+					<div className="location-name">
+						{currWeatherInfo.location}
+					</div>
 					<div className="current-temp">{currWeatherInfo.temp} F</div>
 					<div className="temp-desc">{currWeatherInfo.desc}</div>
 					<div className="min-max">
@@ -98,19 +111,17 @@ function App() {
 				<div className="location-btn" onClick={getLocation}>
 					<button>Detect My Location</button>
 				</div>
-				<div className="display-location">{displayLocationText}</div>
 			</div>
 		);
 	} else {
 		return (
 			<div className="app">
 				<div className="today-weather">
-					<div className="location-name">No Information Yet</div>
+					<div className="location-name">No Location Given</div>
 				</div>
 				<div className="location-btn" onClick={getLocation}>
 					<button>Get my Location</button>
 				</div>
-				<div className="display-location">{displayLocationText}</div>
 			</div>
 		);
 	}
