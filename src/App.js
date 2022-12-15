@@ -3,6 +3,17 @@ import "./styles/App.css";
 
 function App() {
 	// [USE STATES]
+	const [statusMsg, setStatusMsg] = useState("No Location Detected");
+
+	const reqSvgs = require.context("./assets", true, /\.svg$/);
+
+	const [icons, setIcons] = useState(
+		reqSvgs.keys().reduce((images, path) => {
+			images[`${path.substring(2).replace(".svg", "")}`] = reqSvgs(path);
+			return images;
+		}, {})
+	);
+
 	// Current Weather Information
 	// Location of weather being displayed
 	const [currWeatherInfo, setWeatherInfo] = useState({
@@ -14,12 +25,25 @@ function App() {
 		precip: "",
 		humidity: "",
 		windspeed: "",
+		icon: "",
 	});
 
 	// [FUNCTIONS]
 	// Function Name : getLocation
 	// USE : Handles getting user's location
 	const getLocation = () => {
+		setWeatherInfo({
+			location: "",
+			temp: "",
+			desc: "",
+			high: "",
+			low: "",
+			precip: "",
+			humidity: "",
+			windspeed: "",
+			icon: "",
+		});
+
 		const success = (pos) => {
 			const lat = pos.coords.latitude;
 			const long = pos.coords.longitude;
@@ -27,14 +51,14 @@ function App() {
 		};
 
 		const error = () => {
-			console.log("Unable to retrieve your location");
+			setStatusMsg("Unable to Retrieve Location");
 		};
 
-		// If the user does not allow geolocation
+		// If the browser does not allow geolocation
 		if (!navigator.geolocation) {
-			console.log("Geolocation is unsupported by your browser");
+			setStatusMsg("Geolocation is not Supported by your Browser");
 		} else {
-			console.log("Finding your location..");
+			setStatusMsg("Finding Location..");
 			navigator.geolocation.getCurrentPosition(success, error);
 		}
 	};
@@ -70,12 +94,15 @@ function App() {
 				precip: currDay.precip,
 				humidity: currDay.humidity,
 				windspeed: currDay.windspeed,
+				icon: icons[currDay.icon],
 			});
 		} else {
 			console.log("ERROR!");
 		}
 	};
 
+	// Function Name : getForecast
+	// USE : Given longitude & latitude, returns api result of weather
 	const getAddr = async (lat, long) => {
 		const API_KEY = "AeJ03vjX2DuUgrZyE22K6m7IdeCaoxXF";
 		const resp = await fetch(
@@ -92,15 +119,14 @@ function App() {
 	if (currWeatherInfo.location !== "") {
 		return (
 			<div className="app">
+				<div className="location-name">{currWeatherInfo.location}</div>
 				<div className="today-weather">
-					<div className="location-name">
-						{currWeatherInfo.location}
-					</div>
-					<div className="current-temp">{currWeatherInfo.temp} F</div>
+					<img className="weather-icon" src={currWeatherInfo.icon} />
 					<div className="temp-desc">{currWeatherInfo.desc}</div>
+					<div className="current-temp">{currWeatherInfo.temp} F</div>
 					<div className="min-max">
-						<div>High : {currWeatherInfo.high}</div>
-						<div>Low : {currWeatherInfo.low}</div>
+						High : {currWeatherInfo.high} | Low :{" "}
+						{currWeatherInfo.low}
 					</div>
 					<div className="misc-info">
 						<div>Precipitation : {currWeatherInfo.precip}</div>
@@ -116,9 +142,7 @@ function App() {
 	} else {
 		return (
 			<div className="app">
-				<div className="today-weather">
-					<div className="location-name">No Location Given</div>
-				</div>
+				<div className="status-msg">{statusMsg}</div>
 				<div className="location-btn" onClick={getLocation}>
 					<button>Get my Location</button>
 				</div>
