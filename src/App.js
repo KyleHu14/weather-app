@@ -1,5 +1,9 @@
 import { useState } from "react";
+
+import { getGeoLoc, getLoc } from "./utils.js";
+
 import "./styles/App.css";
+import "./styles/general.css";
 
 function App() {
 	// [USE STATES]
@@ -28,45 +32,7 @@ function App() {
 		icon: "",
 	});
 
-	// [FUNCTIONS]
-	// Function Name : getLocation
-	// USE : Handles getting user's location
-	const getLocation = () => {
-		setWeatherInfo({
-			location: "",
-			temp: "",
-			desc: "",
-			high: "",
-			low: "",
-			precip: "",
-			humidity: "",
-			windspeed: "",
-			icon: "",
-		});
-
-		const success = (pos) => {
-			const lat = pos.coords.latitude;
-			const long = pos.coords.longitude;
-			getForecast(lat, long);
-		};
-
-		const error = () => {
-			setStatusMsg("Unable to Retrieve Location");
-		};
-
-		// If the browser does not allow geolocation
-		if (!navigator.geolocation) {
-			setStatusMsg("Geolocation is not Supported by your Browser");
-		} else {
-			setStatusMsg("Finding Location..");
-			navigator.geolocation.getCurrentPosition(success, error);
-		}
-	};
-
-	// Function Name : getForecast
-	// USE : Given longitude & latitude, returns api result of weather
 	const getForecast = async (lat, long) => {
-		const API_KEY = "X5AS4VH98AAB58ZTQRZ6MEBJK";
 		const options = {
 			method: "GET",
 			headers: {},
@@ -74,7 +40,7 @@ function App() {
 
 		// Wait for a response from API
 		const response = await fetch(
-			`https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${lat},${long}?key=${API_KEY}&contentType=json`,
+			`https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${lat},${long}?key=${process.env.REACT_APP_VISUAL_CROSSING_API_KEY}&contentType=json`,
 			options
 		);
 
@@ -83,10 +49,10 @@ function App() {
 			const data = await response.json();
 			const currDay = data.days[0];
 
-			let addr = await getAddr(lat, long);
+			const locData = await getLoc(lat, long);
 
 			setWeatherInfo({
-				location: addr,
+				location: `${locData.municipality}, ${locData.country}`,
 				temp: currDay.temp,
 				desc: currDay.conditions,
 				high: currDay.tempmax,
@@ -101,19 +67,27 @@ function App() {
 		}
 	};
 
-	// Function Name : getForecast
-	// USE : Given longitude & latitude, returns api result of weather
-	const getAddr = async (lat, long) => {
-		const API_KEY = "AeJ03vjX2DuUgrZyE22K6m7IdeCaoxXF";
-		const resp = await fetch(
-			`https://api.tomtom.com/search/2/reverseGeocode/${lat},${long}.json?key=${API_KEY}&language=en-US`
-		);
-		const data = await resp.json();
+	const displayWeather = async () => {
+		setWeatherInfo({
+			location: "",
+			temp: "",
+			desc: "",
+			high: "",
+			low: "",
+			precip: "",
+			humidity: "",
+			windspeed: "",
+			icon: "",
+		});
 
-		let city = String(data.addresses[0].address.municipality);
-		let country = String(data.addresses[0].address.country);
-
-		return `${city}, ${country}`;
+		// Try to get location of user and get weather information
+		try {
+			const geoLoc = await getGeoLoc();
+			const coordinates = geoLoc.coords;
+			getForecast(coordinates.latitude, coordinates.longitude);
+		} catch (error) {
+			console.log(error);
+		}
 	};
 
 	if (currWeatherInfo.location !== "") {
@@ -134,8 +108,8 @@ function App() {
 						<div>Windspeed : {currWeatherInfo.windspeed}</div>
 					</div>
 				</div>
-				<div className="location-btn" onClick={getLocation}>
-					<button>Detect My Location</button>
+				<div className="location-btn" onClick={displayWeather}>
+					<button>Get my Weather</button>
 				</div>
 			</div>
 		);
@@ -143,8 +117,8 @@ function App() {
 		return (
 			<div className="app">
 				<div className="status-msg">{statusMsg}</div>
-				<div className="location-btn" onClick={getLocation}>
-					<button>Get my Location</button>
+				<div className="location-btn" onClick={displayWeather}>
+					<button>Get my Weather</button>
 				</div>
 			</div>
 		);

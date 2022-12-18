@@ -1,31 +1,18 @@
-body{
-    margin: 0;
-    background-color: rgb(39, 40, 42);
-    font-family :'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-}
-
+/* Buttons */
 .location-btn{
     margin-top: 30px;
     display:flex;
     justify-content: center;
 }
 
-.display-location{
+/* A status message when there is no location detected */
+.status-msg {
+    margin-top: 20px;
     color: white;
-    text-align: center;
+    font-size: 40px;
 }
 
-/* Container that Display's today's weather */
-.today-weather{
-    border: 2px solid white;
-    max-width: 230px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top : 10px;
-    padding: 12px;
-    color: white;
-}
-
+/* Displays the name of location of the weather thats being displayed */
 .location-name {
     margin-top : 30px;
     margin-left: auto;
@@ -36,7 +23,20 @@ body{
     margin-bottom: 15px;
     font-size: 35px;
     padding-bottom: 7px;
-    border-bottom: 2px solid white;
+    border-bottom: 4px solid white;
+}
+
+/* Container that displays Today's weather*/
+.today-weather{
+    background-color: rgb(81, 83, 88);
+    /* border: 4px solid rgb(52, 52, 52); */
+    border-radius: 10px;
+    max-width: 230px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top : 10px;
+    padding: 12px;
+    color: white;
 }
 
 .current-temp, .temp-desc, .min-max, .misc-info, .status-msg {
@@ -54,12 +54,6 @@ body{
 
 .misc-info{
     margin-top: 8px;
-}
-
-.status-msg {
-    margin-top: 20px;
-    color: white;
-    font-size: 40px;
 }
 
 .weather-icon{
